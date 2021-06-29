@@ -8,6 +8,13 @@ const db = new sqlite3.Database("realestate.db");
 
 // Project
 const { ApiResponse } = require('./services/apiService');
+const {
+    Auth,
+    registerUser,
+    generateToken,
+    getSingleUser,
+    validateUser
+ } = require('./auth');
 
 app.use(express.json())
 
@@ -40,14 +47,18 @@ app.get('/properties',(req,res)=>{
                 return res.status(200).send(ApiResponse(200,'Properties',rows));
             }
 
+            let onlyArray = only.split(",");
+
             let data = rows.map(each=>{
                 for(key of Object.keys(each)){
-                    if(!only.includes(key)){
+                    if(!onlyArray.includes(key)){
                         delete each[key];
                     }
                 }
                 return each;
             })
+
+            data = data.filter(e=>Object.keys(e).length !== 0);
 
             res.status(200).send(ApiResponse(200,'Properties',data));
 
@@ -56,15 +67,39 @@ app.get('/properties',(req,res)=>{
 
 })
 
-// Add New Property
-// app.post('/properties',(req,res)=>{
 
-//     const {name,price,property_type,show_price,market_type} = req.body;
+// Read Single User
+app.get('/api/users/:id', Auth, (req, res) => {
+    getSingleUser(req, res);
+})
 
-//     if(!name || !price  || !property_type  || !show_price  || !market_type){
-//         res.status(400).send(response(400,'Please fill all data'),[]);
+// User Login
+app.post('/api/login', (req, res) => {
+// let check = validateUser(req.body, res);
+//     if (check === 'fail') {
+//     return
 //     }
-// })
+    generateToken(req.body, res);
+})
+
+// New user registration
+app.post('/api/auth', (req, res) => {
+// let check = validateUser(req.body, res);
+//     if (check === 'fail') {
+//     return
+//     }
+    registerUser(req.body, res);
+})
+
+// Add New Property
+app.post('/properties',(req,res)=>{
+
+    const {name,price,property_type,show_price,market_type} = req.body;
+
+    if(!name || !price  || !property_type  || !show_price  || !market_type){
+        res.status(400).send(response(400,'Please fill all data'),[]);
+    }
+})
 
 app.listen(process.env.PORT,()=>{
     console.log('Listen on http://localhost:'+process.env.PORT)
