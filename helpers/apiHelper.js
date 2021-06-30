@@ -1,4 +1,4 @@
-const ApiResponse = (status,msg,data) => {
+const ApiResponse = (status,msg,data = []) => {
     return {
         status: status,
         message: msg,

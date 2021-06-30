@@ -5,21 +5,21 @@ const express = require('express');
 const app     = express();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("realestate.db");
+const AuthRoutes = require('./auth/routes');
+
+// JWT Middleware
+const {Auth} = require('./auth/funcs');
 
 // Project
-const { ApiResponse } = require('./services/apiService');
-const {
-    Auth,
-    registerUser,
-    generateToken,
-    getSingleUser,
-    validateUser
- } = require('./auth');
-
+const { ApiResponse } = require('./helpers/apiHelper');
+const { validateProperty } = require('./helpers/apiValidator');
 app.use(express.json())
 
 // Home
-app.use(express.static('public'))
+app.use(express.static('public'));
+
+// Auth, JWT related routes
+app.use('/',AuthRoutes);
 
 // All Properties
 app.get('/properties',(req,res)=>{
@@ -67,40 +67,19 @@ app.get('/properties',(req,res)=>{
 
 })
 
-
-// Read Single User
-app.get('/api/users/:id', Auth, (req, res) => {
-    getSingleUser(req, res);
-})
-
-// User Login
-app.post('/api/login', (req, res) => {
-// let check = validateUser(req.body, res);
-//     if (check === 'fail') {
-//     return
-//     }
-    generateToken(req.body, res);
-})
-
-// New user registration
-app.post('/api/auth', (req, res) => {
-// let check = validateUser(req.body, res);
-//     if (check === 'fail') {
-//     return
-//     }
-    registerUser(req.body, res);
-})
-
 // Add New Property
-app.post('/properties',(req,res)=>{
+app.post('/properties', Auth, (req,res)=>{
 
-    const {name,price,property_type,show_price,market_type} = req.body;
+    const {error,value} = validateProperty(req.body);
+    if(error){
+        res.status(400).send(ApiResponse(400,error.details[0].message))
+    };
+    
+    res.status(200).send({message:'Success!'});
 
-    if(!name || !price  || !property_type  || !show_price  || !market_type){
-        res.status(400).send(response(400,'Please fill all data'),[]);
-    }
 })
 
+// Listen App
 app.listen(process.env.PORT,()=>{
     console.log('Listen on http://localhost:'+process.env.PORT)
 })
