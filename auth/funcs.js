@@ -9,13 +9,12 @@ require('dotenv').config()
  const Auth = (req, res, next) => {
  const reqHeader = req.headers['authorization'];
  if (!reqHeader || typeof reqHeader == 'undefined') {
-     res.status(401).send(ApiResponse(401,'Unauthorized!'));
+     return res.status(401).send(ApiResponse(401,'Unauthorized!'));
  }
  req.token = reqHeader.split(" ")[1];
  jwt.verify(req.token, secretKey, (err, user) => {
      if (err) {
-        res.status(401).send(ApiResponse(401,'Unauthorized!'));
-        return;
+        return res.status(401).send(ApiResponse(401,'Unauthorized!'));
      }
      req.user = user;
      next();
@@ -54,7 +53,7 @@ const createNewUser = (obj) =>{
     const email = db.prepare(query).get();
 
     if(email){
-        res.status(400).send(ApiResponse(400,req.email + ' is already existed!'))
+        return res.status(400).send(ApiResponse(400,req.email + ' is already existed!'))
     }
 
     bcrypt.hash(req.password,10).then((hashedPass)=> {
@@ -65,7 +64,7 @@ const createNewUser = (obj) =>{
            password: hashedPass
        }
        createNewUser(newUser);
-       res.status(200).send(ApiResponse(200,req.email + ' is successfully registered!'))
+       return res.status(200).send(ApiResponse(200,req.email + ' is successfully registered!'))
    })
  }
 
@@ -82,15 +81,15 @@ const createNewUser = (obj) =>{
         const query = `SELECT * FROM users WHERE email = '${req.email}'`;
         const user = db.prepare(query).get();
         if(!user){
-            res.status(400).send(ApiResponse(400,req.email+' does not exist.'))
+            return res.status(400).send(ApiResponse(400,req.email+' does not exist.'))
         } 
 
        bcrypt.compare(req.password, user.password).then((result) => {
            if (result) {
                delete user.password;
-               res.status(200).send(ApiResponse(200,'Sucessfully logged in!',{token,user}));
+               return res.status(200).send(ApiResponse(200,'Sucessfully logged in!',{token,user}));
            }else{
-               res.status(401).send(ApiResponse(401,'Unauthorized!'));
+               return res.status(401).send(ApiResponse(401,'Unauthorized!'));
            }
        })
      })

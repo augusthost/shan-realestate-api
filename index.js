@@ -70,7 +70,7 @@ app.get('/properties', (req, res) => {
 
     data = data.filter(e => Object.keys(e).length !== 0);
 
-    res.status(200).send(ApiResponse(200, 'Properties', data));
+    return res.status(200).send(ApiResponse(200, 'Properties', data));
 
 })
 
@@ -86,15 +86,15 @@ app.get('/properties/:id', async (req, res) => {
     const property_id = req.params.id;
     let reg = new RegExp(`[0-9]`,'gm');
     if(!property_id || !reg.test(property_id)){
-        res.status(400).send(ApiResponse(400,'Please provide a valid parameter'))
+        return res.status(400).send(ApiResponse(400,'Please provide a valid parameter'))
     }
   
     const property = await getSingleProperty(property_id);
     if(!property){
-        res.status(404).send(ApiResponse(404,'No property Id found!'))
+        return res.status(404).send(ApiResponse(404,'No property Id found!'))
     }
 
-    res.status(200).send(ApiResponse(200,"Successfully retrieved property id "+property_id,property));
+    return res.status(200).send(ApiResponse(200,"Successfully retrieved property id "+property_id,property));
 })
 
 
@@ -112,15 +112,15 @@ app.put('/properties', Auth, (req, res) => {
 
     let reg = new RegExp(`[0-9]`,'gm');
     if(!req.body.id || !reg.test(req.body.id)){
-        res.status(400).send(ApiResponse(400,'Bad request, please provide a valid id'))
+        return res.status(400).send(ApiResponse(400,'Bad request, please provide a valid id'))
     }
     if(!isCurrentUserProperty(req)){
-        res.status(400).send(ApiResponse(400,'Bad request, you are not allowed to update this property'));
+        return res.status(400).send(ApiResponse(400,'Bad request, you are not allowed to update this property'));
     }
 
     const { error, value } = validateProperty(req.body,'update');
     if (error) {
-        res.status(400).send(ApiResponse(400, error.details[0].message))
+        return res.status(400).send(ApiResponse(400, error.details[0].message))
     };
 
    const appendObj = {
@@ -131,7 +131,7 @@ app.put('/properties', Auth, (req, res) => {
 	
    try{
         const updatedProperty = updateProperty(req.body.id,property); 
-        res.status(200).send(ApiResponse(200,'Successfully updated!',updatedProperty))
+        return res.status(200).send(ApiResponse(200,'Successfully updated!',updatedProperty))
    }catch(err){
       throw new Error(err);
    }
@@ -158,7 +158,7 @@ const addProperty = (obj) => {
        } = obj;
     let question_marks = Object.keys(obj).map(()=>'?').join(",");
     let stmt = db.prepare(`INSERT INTO properties VALUES(?,${question_marks})`);
-    stmt.run(
+    return stmt.run(
         null,
         uuid,
         title,
@@ -179,7 +179,7 @@ app.post('/properties', Auth, (req, res) => {
 
     const { error, value } = validateProperty(req.body);
     if (error) {
-        res.status(400).send(ApiResponse(400, error.details[0].message))
+       return res.status(400).send(ApiResponse(400, error.details[0].message))
     };
 
    const appendObj = {
@@ -192,8 +192,8 @@ app.post('/properties', Auth, (req, res) => {
    const property = Object.assign({},appendObj,req.body);
 	
    try{
-        addProperty(property); 
-        res.status(200).send(ApiResponse(200,'Successfully added!',property))
+        const addedProperty = addProperty(property); 
+        return res.status(200).send(ApiResponse(200,'Successfully added!', addedProperty))
    }catch(err){
       throw new Error(err);
    }
@@ -211,16 +211,16 @@ app.delete('/properties', Auth, (req, res) => {
 
     let reg = new RegExp(`[0-9]`,'gm');
     if(!req.body.id || !reg.test(req.body.id)){
-        res.status(400).send(ApiResponse(400,'Bad request, please provide a valid id'))
+        return res.status(400).send(ApiResponse(400,'Bad request, please provide a valid id'))
     }
 
     if(!isCurrentUserProperty(req)){
-        res.status(400).send(ApiResponse(400,'Bad request, you are not allowed to delete this property'));
+        return res.status(400).send(ApiResponse(400,'Bad request, you are not allowed to delete this property'));
     }
 
    try{
         const deletedObj = deleteProperty(req.body.id); 
-        res.status(200).send(ApiResponse(200,'Successfully deleted!',deletedObj))
+        return res.status(200).send(ApiResponse(200,'Successfully deleted!',deletedObj))
    }catch(err){
       throw new Error(err);
    }
