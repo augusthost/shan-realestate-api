@@ -10,7 +10,6 @@ require('dotenv').config()
  const reqHeader = req.headers['authorization'];
  if (!reqHeader || typeof reqHeader == 'undefined') {
      res.status(401).send(ApiResponse(401,'Unauthorized!'));
-     return;
  }
  req.token = reqHeader.split(" ")[1];
  jwt.verify(req.token, secretKey, (err, user) => {
@@ -71,7 +70,14 @@ const createNewUser = (obj) =>{
  }
 
  // Login and Generate Token
- const generateToken = (req, res) =>{
+ const getTheLastUserId = () =>{
+    const query = `SELECT * FROM users ORDER BY id DESC LIMIT 1`;
+    const obj = db.prepare(query).get();
+    return obj.id;
+ }
+
+ const generateToken = async (req, res) =>{
+     req.user_id = await getTheLastUserId();
      jwt.sign(req, secretKey, (err, token) => {
         const query = `SELECT * FROM users WHERE email = '${req.email}'`;
         const user = db.prepare(query).get();
@@ -90,9 +96,9 @@ const createNewUser = (obj) =>{
      })
  }
 
- // Get User By Email
- const getUserByEmail = (email) =>{
-    const query = `SELECT * FROM users WHERE email = '${email}'`;
+ // Get User By id
+ const getUserById = (id) =>{
+    const query = `SELECT * FROM users WHERE id = '${id}'`;
     return new Promise((resolve,reject)=>{
         const user = db.prepare(query).get();
         delete user.password;
@@ -105,5 +111,5 @@ const createNewUser = (obj) =>{
     Auth,
     registerUser,
     generateToken,
-    getUserByEmail
+    getUserById
  }

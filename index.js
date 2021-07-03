@@ -28,12 +28,8 @@ app.use('/', AuthRoutes);
 // Property Helper functions
 const isCurrentUserProperty = async (req) =>{
     const property = await getSingleProperty(req.body.id);
-    return new Promise((resolve,reject)=>{
-        if(property.email !== req.user.email){
-            reject(false);
-        }
-        resolve(true);
-    })
+    if(!property) return false;
+    return property.author == req.user.user_id;
 }
 
 // All Properties
@@ -118,7 +114,6 @@ app.put('/properties', Auth, (req, res) => {
     if(!req.body.id || !reg.test(req.body.id)){
         res.status(400).send(ApiResponse(400,'Bad request, please provide a valid id'))
     }
-
     if(!isCurrentUserProperty(req)){
         res.status(400).send(ApiResponse(400,'Bad request, you are not allowed to update this property'));
     }

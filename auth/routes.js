@@ -2,7 +2,7 @@
 const express = require('express');
 const router  = express.Router();
 
-const { ApiResponse, Auth, getUserByEmail, registerUser, generateToken } = require('./funcs');
+const { ApiResponse, Auth, getUserById, registerUser, generateToken } = require('./funcs');
 const { validateLogin, validateRegister } = require('./validate');
 
 // User Login
@@ -26,7 +26,7 @@ router.post('/register', (req, res) => {
 // Get My Profile Data
 router.get('/me',Auth, async (req,res)=>{
     try{
-        const user = await getUserByEmail(req.user.email);
+        const user = await getUserById(req.user.user_id);
         res.status(200).send(ApiResponse(200,'Sucessfully retrieved',user))
     }catch(err){
         throw new Error(err);
