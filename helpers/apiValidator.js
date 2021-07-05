@@ -6,6 +6,7 @@ const Joi = require('joi');
     let obj = { 
         title: Joi.string().required(),
         address: Joi.string().min(20).required(),
+        description: Joi.string().min(20),
         price: Joi.string().required(),
         show_price: Joi.string().max(2).required(),
         phone_number: Joi.string().required()
