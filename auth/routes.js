@@ -9,7 +9,7 @@ const { validateLogin, validateRegister } = require('./validate');
 router.post('/login', (req, res) => {
     const {error,value} = validateLogin(req.body);
     if(error){
-        res.status(400).send(ApiResponse(400,error.details[0].message))
+        return res.status(400).send(ApiResponse(400,error.details[0].message))
     };
     generateToken(req.body, res);
 })
@@ -18,16 +18,16 @@ router.post('/login', (req, res) => {
 router.post('/register', (req, res) => {
     const {error,value} = validateRegister(req.body);
     if(error){
-        res.status(400).send(ApiResponse(400,error.details[0].message));
+        return res.status(400).send(ApiResponse(400,error.details[0].message));
     };
-    registerUser(req.body, res);
+    return registerUser(req.body, res);
 })
 
 // Get My Profile Data
 router.get('/me',Auth, async (req,res)=>{
     try{
         const user = await getUserById(req.user.user_id);
-        res.status(200).send(ApiResponse(200,'Sucessfully retrieved',user))
+        return res.status(200).send(ApiResponse(200,'Sucessfully retrieved',user))
     }catch(err){
         throw new Error(err);
     }

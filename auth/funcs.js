@@ -49,12 +49,19 @@ const createNewUser = (obj) =>{
 
 // Register new user
  const registerUser = (req,res) =>{
-    const query = `SELECT email FROM users WHERE email = '${req.email}'`;
-    const email = db.prepare(query).get();
+    
+    const query = `SELECT * FROM users WHERE email = '${req.email}'`;
+    const obj   = db.prepare(query).get();
+    
+   if(obj){
+        if(obj.email){
+            return res.status(400).send(ApiResponse(400,req.email + ' is already existed!'))
+        }
 
-    if(email){
-        return res.status(400).send(ApiResponse(400,req.email + ' is already existed!'))
-    }
+        if(obj.name === req.name){
+            return res.status(400).send(ApiResponse(400,req.name + ' is already existed!'))
+        }
+   }
 
     bcrypt.hash(req.password,10).then((hashedPass)=> {
        const newUser = {
