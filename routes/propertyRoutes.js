@@ -83,6 +83,29 @@ router.get('/properties/:id', async (req, res) => {
 })
 
 
+// Get current user's properties
+const getCurrentUserProperties = (id) =>{
+    const query = `SELECT * FROM properties WHERE author = ${id}`;
+    return new Promise((resolve,reject)=>{
+       const data = db.prepare(query).all();
+       resolve(data);
+    })
+}
+router.get('/users/:user_id/properties', async (req, res) => {
+    const user_id = req.params.user_id;
+    let reg = new RegExp(`[0-9]`,'gm');
+    if(!user_id || !reg.test(user_id)){
+        return res.status(400).send(ApiResponse(400,'Please provide a valid parameter'))
+    }
+  
+    const properties = await getCurrentUserProperties(user_id);
+    if(!properties){
+        return res.status(404).send(ApiResponse(404,'No property found!'))
+    }
+
+    return res.status(200).send(ApiResponse(200,`Successfully retrieved user ${user_id} properties`,properties));
+})
+
 
 // Update Property
 const updateProperty = (id,obj) => {
