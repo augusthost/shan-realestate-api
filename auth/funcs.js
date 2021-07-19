@@ -6,6 +6,15 @@ require('dotenv').config()
 
  const secretKey = process.env.SECRET;
 
+
+ const ApiResponse = (status,msg,data = []) => {
+    return {
+        status: status,
+        message: msg,
+        data: data
+    }
+}
+
  const Auth = (req, res, next) => {
  const reqHeader = req.headers['authorization'];
  if (!reqHeader || typeof reqHeader == 'undefined') {
@@ -16,18 +25,11 @@ require('dotenv').config()
      if (err) {
         return res.status(401).send(ApiResponse(401,'Unauthorized!'));
      }
+     console.log(user)
      req.user = user;
      next();
  })
  }
-
- const ApiResponse = (status,msg,data = []) => {
-    return {
-        status: status,
-        message: msg,
-        data: data
-    }
-}
 
  // Create new user
 const createNewUser = (obj) =>{
