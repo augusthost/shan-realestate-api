@@ -25,7 +25,6 @@ require('dotenv').config()
      if (err) {
         return res.status(401).send(ApiResponse(401,'Unauthorized!'));
      }
-     console.log(user)
      req.user = user;
      next();
  })
